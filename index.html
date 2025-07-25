@@ -1,128 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>3D Glacier Feeding River</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
-    #info, #controls {
-      position: absolute;
-      background: rgba(0,0,0,0.5);
-      color: white;
-      font-family: sans-serif;
-      padding: 10px;
-      z-index: 1;
-    }
-    #info { top: 10px; left: 10px; }
-    #controls { top: 70px; left: 10px; }
-    #controls input { width: 100px; }
-  </style>
-</head>
-<body>
-  <div id="info">3D Glacier Feeding River Visualization</div>
-  <div id="controls">
-    <label>Melt Rate: <input id="meltRate" type="range" min="50" max="1000" value="300"></label>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <title>3D Glacier Feeding River</title>
+    <style>
+      body { margin: 0; overflow: hidden; }
+      canvas { display: block; }
+      #info, #controls {
+        position: absolute;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        font-family: sans-serif;
+        padding: 10px;
+        z-index: 1;
+      }
+      #info { top: 10px; left: 10px; }
+      #controls { top: 70px; left: 10px; }
+      #controls input { width: 100px; }
+    </style>
+  </head>
+  <body>
+    <div id="info">3D Glacier Feeding River Visualization</div>
+    <div id="controls">
+      <label>Melt Rate: <input id="meltRate" type="range" min="50" max="1000" value="300"></label>
+    </div>
 
-  <script>
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#aee0f7');
+    <script type="module">
+      import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
+      import { OrbitControls } from 'https://unpkg.com/three@0.158.0/examples/jsm/controls/OrbitControls.js';
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 10, 25);
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color('#aee0f7');
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 10, 25);
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
 
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 10, 7);
-    scene.add(light);
-    scene.add(new THREE.AmbientLight(0x555555));
+      const controls = new OrbitControls(camera, renderer.domElement);
 
-    const terrainGeometry = new THREE.ConeGeometry(10, 20, 4);
-    const terrainMaterial = new THREE.MeshLambertMaterial({ color: 0x8B7765 });
-    const mountain = new THREE.Mesh(terrainGeometry, terrainMaterial);
-    mountain.rotation.y = Math.PI / 4;
-    scene.add(mountain);
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(5, 10, 7);
+      scene.add(light);
+      scene.add(new THREE.AmbientLight(0x555555));
 
-    const glacierGeometry = new THREE.SphereGeometry(3, 32, 32);
-    const glacierMaterial = new THREE.MeshLambertMaterial({ color: 0xE0FFFF });
-    const glacier = new THREE.Mesh(glacierGeometry, glacierMaterial);
-    glacier.position.set(0, 9, 0);
-    scene.add(glacier);
+      const terrainGeometry = new THREE.ConeGeometry(10, 20, 4);
+      const terrainMaterial = new THREE.MeshLambertMaterial({ color: 0x8B7765 });
+      const mountain = new THREE.Mesh(terrainGeometry, terrainMaterial);
+      mountain.rotation.y = Math.PI / 4;
+      scene.add(mountain);
 
-    const drops = [];
-    const dropGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-    const dropMaterial = new THREE.MeshBasicMaterial({ color: 0x00BFFF });
+      const glacierGeometry = new THREE.SphereGeometry(3, 32, 32);
+      const glacierMaterial = new THREE.MeshLambertMaterial({ color: 0xE0FFFF });
+      const glacier = new THREE.Mesh(glacierGeometry, glacierMaterial);
+      glacier.position.set(0, 9, 0);
+      scene.add(glacier);
 
-    let meltInterval = 300;
-    let animateMelting = true;
-    let meltTimer = setInterval(() => {
-      if (animateMelting && drops.length < 100) spawnDrop();
-    }, meltInterval);
+      const drops = [];
+      const dropGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+      const dropMaterial = new THREE.MeshBasicMaterial({ color: 0x00BFFF });
 
-    document.getElementById("meltRate").addEventListener("input", e => {
-      clearInterval(meltTimer);
-      meltInterval = parseInt(e.target.value);
-      meltTimer = setInterval(() => {
+      let meltInterval = 300;
+      let animateMelting = true;
+
+      function spawnDrop() {
+        const drop = new THREE.Mesh(dropGeometry, dropMaterial);
+        drop.position.set(0 + (Math.random() - 0.5), 9, 0 + (Math.random() - 0.5));
+        drops.push(drop);
+        scene.add(drop);
+      }
+
+      let meltTimer = setInterval(() => {
         if (animateMelting && drops.length < 100) spawnDrop();
       }, meltInterval);
-    });
 
-    function spawnDrop() {
-      const drop = new THREE.Mesh(dropGeometry, dropMaterial);
-      drop.position.set(
-        0 + (Math.random() - 0.5),
-        9,
-        0 + (Math.random() - 0.5)
-      );
-      drops.push(drop);
-      scene.add(drop);
-    }
+      document.getElementById("meltRate").addEventListener("input", e => {
+        clearInterval(meltTimer);
+        meltInterval = parseInt(e.target.value);
+        meltTimer = setInterval(() => {
+          if (animateMelting && drops.length < 100) spawnDrop();
+        }, meltInterval);
+      });
 
-    const riverPath = [];
-    for (let i = 0; i < 50; i++) {
-      riverPath.push(new THREE.Vector3(i * 0.2 - 5, 0.1, Math.sin(i * 0.2)));
-    }
-    const riverGeometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(riverPath), 64, 0.3, 8, false);
-    const riverMaterial = new THREE.MeshLambertMaterial({ color: 0x00BFFF });
-    const river = new THREE.Mesh(riverGeometry, riverMaterial);
-    scene.add(river);
+      const riverPath = [];
+      for (let i = 0; i < 50; i++) {
+        riverPath.push(new THREE.Vector3(i * 0.2 - 5, 0.1, Math.sin(i * 0.2)));
+      }
+      const riverGeometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(riverPath), 64, 0.3, 8, false);
+      const riverMaterial = new THREE.MeshLambertMaterial({ color: 0x00BFFF });
+      const river = new THREE.Mesh(riverGeometry, riverMaterial);
+      scene.add(river);
 
-    function animateDrops() {
-      for (let i = drops.length - 1; i >= 0; i--) {
-        const d = drops[i];
-        d.position.y -= 0.1;
-        d.position.z += 0.05;
-        d.position.x += (Math.random() - 0.5) * 0.02;
-
-        if (d.position.y < 0.1) {
-          scene.remove(d);
-          drops.splice(i, 1);
+      function animateDrops() {
+        for (let i = drops.length - 1; i >= 0; i--) {
+          const d = drops[i];
+          d.position.y -= 0.1;
+          d.position.z += 0.05;
+          d.position.x += (Math.random() - 0.5) * 0.02;
+          if (d.position.y < 0.1) {
+            scene.remove(d);
+            drops.splice(i, 1);
+          }
         }
       }
-    }
 
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      animateDrops();
-      renderer.render(scene, camera);
-    }
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        animateDrops();
+        renderer.render(scene, camera);
+      }
 
-    animate();
+      animate();
 
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth/window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
-</body>
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
 </html>
+
